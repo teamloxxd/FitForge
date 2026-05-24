@@ -1,34 +1,27 @@
 import { useState } from "react";
 
-const API_URL = "https://api.anthropic.com/v1/messages";
+const API_KEY = import.meta.env.VITE_GEMINI_KEY;
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
-const callClaude = async (prompt) => {
+const callGemini = async (prompt: string): Promise<string> => {
   const response = await fetch(API_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      messages: [{ role: "user", content: prompt }],
+      contents: [{ parts: [{ text: prompt }] }],
     }),
   });
   const data = await response.json();
-  return data.content.map((i) => i.text || "").join("\n");
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error generating response.";
 };
 
 const tabs = ["🏋️ Workout Split", "🥗 Diet Plan", "🔢 BMI", "🔥 Calories"];
 
-const inputClass =
-  "w-full bg-[#111111] border border-[#f97316]/30 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#f97316] transition-colors";
-const selectClass =
-  "w-full bg-[#111111] border border-[#f97316]/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f97316] transition-colors";
-const btnClass =
-  "w-full bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all active:scale-95 mt-2";
+const inputClass = "w-full bg-[#111111] border border-[#f97316]/30 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#f97316] transition-colors";
+const selectClass = "w-full bg-[#111111] border border-[#f97316]/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f97316] transition-colors";
+const btnClass = "w-full bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all active:scale-95 mt-2";
 
-function ResultBox({ text }) {
+function ResultBox({ text }: { text: string }) {
   if (!text) return null;
   return (
     <div className="mt-6 bg-[#111111] border border-[#f97316]/30 rounded-2xl p-5 text-gray-200 whitespace-pre-wrap leading-relaxed text-sm">
@@ -46,7 +39,7 @@ function WorkoutTab() {
     setLoading(true);
     setResult("");
     const prompt = `Create a detailed ${form.days}-day per week workout split for someone with goal: ${form.goal}, fitness level: ${form.level}, equipment: ${form.equipment}. Include exercises, sets, reps, and brief tips. Format it clearly with days as headers.`;
-    const res = await callClaude(prompt);
+    const res = await callGemini(prompt);
     setResult(res);
     setLoading(false);
   };
@@ -56,19 +49,13 @@ function WorkoutTab() {
       <div>
         <label className="text-xs text-gray-400 mb-1 block uppercase tracking-widest">Goal</label>
         <select className={selectClass} value={form.goal} onChange={e => setForm({ ...form, goal: e.target.value })}>
-          <option>muscle gain</option>
-          <option>fat loss</option>
-          <option>strength</option>
-          <option>endurance</option>
-          <option>general fitness</option>
+          <option>muscle gain</option><option>fat loss</option><option>strength</option><option>endurance</option><option>general fitness</option>
         </select>
       </div>
       <div>
         <label className="text-xs text-gray-400 mb-1 block uppercase tracking-widest">Fitness Level</label>
         <select className={selectClass} value={form.level} onChange={e => setForm({ ...form, level: e.target.value })}>
-          <option>beginner</option>
-          <option>intermediate</option>
-          <option>advanced</option>
+          <option>beginner</option><option>intermediate</option><option>advanced</option>
         </select>
       </div>
       <div>
@@ -80,10 +67,7 @@ function WorkoutTab() {
       <div>
         <label className="text-xs text-gray-400 mb-1 block uppercase tracking-widest">Equipment</label>
         <select className={selectClass} value={form.equipment} onChange={e => setForm({ ...form, equipment: e.target.value })}>
-          <option>gym</option>
-          <option>home (dumbbells)</option>
-          <option>no equipment</option>
-          <option>resistance bands</option>
+          <option>gym</option><option>home (dumbbells)</option><option>no equipment</option><option>resistance bands</option>
         </select>
       </div>
       <button className={btnClass} onClick={generate} disabled={loading}>
@@ -103,7 +87,7 @@ function DietTab() {
     setLoading(true);
     setResult("");
     const prompt = `Create a detailed daily diet plan for someone: weight ${form.weight}kg, height ${form.height}cm, goal: ${form.goal}, dietary preference: ${form.diet}, wants ${form.meals} meals per day. Include meal names, foods, rough portions, and macros estimate. Format clearly.`;
-    const res = await callClaude(prompt);
+    const res = await callGemini(prompt);
     setResult(res);
     setLoading(false);
   };
@@ -123,20 +107,13 @@ function DietTab() {
       <div>
         <label className="text-xs text-gray-400 mb-1 block uppercase tracking-widest">Goal</label>
         <select className={selectClass} value={form.goal} onChange={e => setForm({ ...form, goal: e.target.value })}>
-          <option>fat loss</option>
-          <option>muscle gain</option>
-          <option>maintenance</option>
-          <option>clean bulk</option>
+          <option>fat loss</option><option>muscle gain</option><option>maintenance</option><option>clean bulk</option>
         </select>
       </div>
       <div>
         <label className="text-xs text-gray-400 mb-1 block uppercase tracking-widest">Diet Preference</label>
         <select className={selectClass} value={form.diet} onChange={e => setForm({ ...form, diet: e.target.value })}>
-          <option>no preference</option>
-          <option>vegetarian</option>
-          <option>vegan</option>
-          <option>keto</option>
-          <option>high protein</option>
+          <option>no preference</option><option>vegetarian</option><option>vegan</option><option>keto</option><option>high protein</option>
         </select>
       </div>
       <div>
@@ -156,7 +133,7 @@ function DietTab() {
 function BMITab() {
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
-  const [bmi, setBmi] = useState(null);
+  const [bmi, setBmi] = useState<string | null>(null);
 
   const calculate = () => {
     const h = parseFloat(height) / 100;
@@ -165,7 +142,7 @@ function BMITab() {
     setBmi((w / (h * h)).toFixed(1));
   };
 
-  const getCategory = (b) => {
+  const getCategory = (b: number) => {
     if (b < 18.5) return { label: "Underweight", color: "#60a5fa" };
     if (b < 25) return { label: "Normal", color: "#4ade80" };
     if (b < 30) return { label: "Overweight", color: "#facc15" };
@@ -187,7 +164,7 @@ function BMITab() {
         </div>
       </div>
       <button className={btnClass} onClick={calculate}>Calculate BMI</button>
-      {bmi && (
+      {bmi && cat && (
         <div className="mt-6 bg-[#111111] border border-[#f97316]/30 rounded-2xl p-6 text-center">
           <p className="text-gray-400 text-sm uppercase tracking-widest mb-2">Your BMI</p>
           <p className="text-6xl font-black mb-3" style={{ color: cat.color }}>{bmi}</p>
@@ -208,20 +185,20 @@ function BMITab() {
 
 function CalorieTab() {
   const [form, setForm] = useState({ age: "", weight: "", height: "", gender: "male", activity: "moderate", goal: "maintenance" });
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<{ tdee: number; target: number; protein: number; carbs: number; fat: number } | null>(null);
 
-  const activityMult = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very: 1.9 };
-  const goalAdj = { "fat loss": -500, "mild loss": -250, maintenance: 0, "mild gain": 250, "muscle gain": 500 };
+  const activityMult: Record<string, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very: 1.9 };
+  const goalAdj: Record<string, number> = { "fat loss": -500, "mild loss": -250, maintenance: 0, "mild gain": 250, "muscle gain": 500 };
 
   const calculate = () => {
     const { age, weight, height, gender, activity, goal } = form;
     if (!age || !weight || !height) return;
-    let bmr = gender === "male"
-      ? 10 * weight + 6.25 * height - 5 * age + 5
-      : 10 * weight + 6.25 * height - 5 * age - 161;
+    const bmr = gender === "male"
+      ? 10 * +weight + 6.25 * +height - 5 * +age + 5
+      : 10 * +weight + 6.25 * +height - 5 * +age - 161;
     const tdee = Math.round(bmr * activityMult[activity]);
     const target = tdee + goalAdj[goal];
-    setResult({ tdee, target, protein: Math.round(weight * 2), carbs: Math.round((target * 0.4) / 4), fat: Math.round((target * 0.3) / 9) });
+    setResult({ tdee, target, protein: Math.round(+weight * 2), carbs: Math.round((target * 0.4) / 4), fat: Math.round((target * 0.3) / 9) });
   };
 
   return (
@@ -243,8 +220,7 @@ function CalorieTab() {
       <div>
         <label className="text-xs text-gray-400 mb-1 block uppercase tracking-widest">Gender</label>
         <select className={selectClass} value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
+          <option value="male">Male</option><option value="female">Female</option>
         </select>
       </div>
       <div>
@@ -260,11 +236,7 @@ function CalorieTab() {
       <div>
         <label className="text-xs text-gray-400 mb-1 block uppercase tracking-widest">Goal</label>
         <select className={selectClass} value={form.goal} onChange={e => setForm({ ...form, goal: e.target.value })}>
-          <option>fat loss</option>
-          <option>mild loss</option>
-          <option>maintenance</option>
-          <option>mild gain</option>
-          <option>muscle gain</option>
+          <option>fat loss</option><option>mild loss</option><option>maintenance</option><option>mild gain</option><option>muscle gain</option>
         </select>
       </div>
       <button className={btnClass} onClick={calculate}>Calculate Calories 🔥</button>
@@ -295,14 +267,11 @@ function CalorieTab() {
 
 export default function FitnessApp() {
   const [activeTab, setActiveTab] = useState(0);
-
   const tabComponents = [<WorkoutTab />, <DietTab />, <BMITab />, <CalorieTab />];
 
   return (
     <div className="min-h-screen bg-[#000000] text-white font-sans" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet" />
-
-      {/* Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#111111] to-[#000000] px-6 pt-12 pb-8">
         <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#f97316]/10 blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10 text-center">
@@ -313,31 +282,19 @@ export default function FitnessApp() {
           <p className="text-gray-400 text-sm">Your personal AI fitness companion</p>
         </div>
       </div>
-
-      {/* Tabs */}
       <div className="px-4 mt-2">
         <div className="flex bg-[#111111] rounded-2xl p-1 gap-1">
           {tabs.map((tab, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveTab(i)}
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === i
-                  ? "bg-[#f97316] text-white shadow-lg"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
+            <button key={i} onClick={() => setActiveTab(i)}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === i ? "bg-[#f97316] text-white shadow-lg" : "text-gray-400 hover:text-white"}`}>
               {tab}
             </button>
           ))}
         </div>
       </div>
-
-      {/* Content */}
       <div className="px-4 py-6 max-w-lg mx-auto">
         {tabComponents[activeTab]}
       </div>
-
       <p className="text-center text-gray-600 text-xs pb-8">Results are AI-generated. Consult a professional for medical advice.</p>
     </div>
   );
