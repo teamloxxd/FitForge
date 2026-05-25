@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const API_KEY = import.meta.env.VITE_GEMINI_KEY;
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
 const callGemini = async (prompt: string): Promise<string> => {
   const response = await fetch(API_URL, {
@@ -12,7 +12,7 @@ const callGemini = async (prompt: string): Promise<string> => {
     }),
   });
   const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error generating response.";
+  const errorMsg = data?.error?.message || JSON.stringify(data?.error) || "Unknown error"; console.error("Gemini error:", data); return data.candidates?.[0]?.content?.parts?.[0]?.text || "Error: " + errorMsg;
 };
 
 const tabs = ["🏋️ Workout Split", "🥗 Diet Plan", "🔢 BMI", "🔥 Calories"];
